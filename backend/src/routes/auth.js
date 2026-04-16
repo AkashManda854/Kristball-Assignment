@@ -6,6 +6,10 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+router.get('/test', (_req, res) => {
+  return res.json({ message: 'Auth route working' });
+});
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 

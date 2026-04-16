@@ -17,6 +17,7 @@ app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use(apiLogger);
 
+app.get('/', (_req, res) => res.send('Backend is running'));
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/bases', baseRoutes);
