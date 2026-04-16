@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { PrismaClient, Role } from '@prisma/client';
+import { pathToFileURL } from 'node:url';
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function seedDatabase() {
   await prisma.log.deleteMany();
   await prisma.expenditure.deleteMany();
   await prisma.assignment.deleteMany();
@@ -96,11 +97,15 @@ async function main() {
   console.log('Seed complete');
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+const isDirectRun = process.argv[1] ? import.meta.url === pathToFileURL(process.argv[1]).href : false;
+
+if (isDirectRun) {
+  seedDatabase()
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
