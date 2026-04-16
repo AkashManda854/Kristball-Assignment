@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BASE_COMMANDER
+  LOGISTICS_OFFICER
+}
+
+model Base {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  location      String
+  users         User[]
+  purchases     Purchase[]
+  outgoing      Transfer[]    @relation("FromBase")
+  incoming      Transfer[]    @relation("ToBase")
+  assignments   Assignment[]
+  expenditures  Expenditure[]
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  role         Role
+  baseId       Int?
+  email        String        @unique
+  password     String
+  base         Base?         @relation(fields: [baseId], references: [id])
+  purchases    Purchase[]    @relation("PurchaseCreator")
+  transfers    Transfer[]    @relation("TransferCreator")
+  assignments  Assignment[]  @relation("AssignmentCreator")
+  expenditures Expenditure[] @relation("ExpenditureCreator")
+  logs         Log[]
+}
+
+model Equipment {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type         String
+  purchases    Purchase[]
+  transfers    Transfer[]
+  assignments  Assignment[]
+  expenditures Expenditure[]
+}
+
+model Purchase {
+  id           Int       @id @default(autoincrement())
+  equipmentId  Int
+  quantity     Int
+  baseId       Int
+  date         DateTime
+  createdById  Int?
+  equipment    Equipment @relation(fields: [equipmentId], references: [id])
+  base         Base      @relation(fields: [baseId], references: [id])
+  user         User?     @relation("PurchaseCreator", fields: [createdById], references: [id])
+}
+
+model Transfer {
+  id           Int       @id @default(autoincrement())
+  fromBaseId   Int
+  toBaseId     Int
+  equipmentId  Int
+  quantity     Int
+  date         DateTime
+  createdById  Int?
+  fromBase     Base      @relation("FromBase", fields: [fromBaseId], references: [id])
+  toBase       Base      @relation("ToBase", fields: [toBaseId], references: [id])
+  equipment    Equipment @relation(fields: [equipmentId], references: [id])
+  user         User?     @relation("TransferCreator", fields: [createdById], references: [id])
+}
+
+model Assignment {
+  id           Int       @id @default(autoincrement())
+  personnelName String
+  equipmentId  Int
+  quantity     Int
+  baseId       Int
+  date         DateTime
+  createdById  Int?
+  equipment    Equipment @relation(fields: [equipmentId], references: [id])
+  base         Base      @relation(fields: [baseId], references: [id])
+  user         User?     @relation("AssignmentCreator", fields: [createdById], references: [id])
+}
+
+model Expenditure {
+  id           Int       @id @default(autoincrement())
+  equipmentId  Int
+  quantity     Int
+  baseId       Int
+  date         DateTime
+  createdById  Int?
+  equipment    Equipment @relation(fields: [equipmentId], references: [id])
+  base         Base      @relation(fields: [baseId], references: [id])
+  user         User?     @relation("ExpenditureCreator", fields: [createdById], references: [id])
+}
+
+model Log {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  action     String
+  endpoint   String
+  timestamp  DateTime
+  user       User     @relation(fields: [userId], references: [id])
+}
